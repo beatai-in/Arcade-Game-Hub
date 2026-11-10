@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Switch - Instant Arcade</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+        body {
+            margin: 0; padding: 0; background: #0f0f1a; color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; overflow: hidden;
+        }
+        h1 { margin: 0 0 5px 0; font-size: 22px; color: #00fff5; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0, 255, 245, 0.4); }
+        #game-container {
+            position: relative; width: 450px; height: 600px; background: #1a1a2e;
+            border: 2px solid #00fff5; border-radius: 8px; box-shadow: 0 0 25px rgba(0, 255, 245, 0.2);
+            overflow: hidden; display: flex; justify-content: center; align-items: center;
+        }
+        canvas { display: block; background: #12121f; }
+        #ui { position: absolute; top: 15px; left: 20px; font-size: 20px; font-weight: bold; color: #00fff5; z-index: 10; }
+        .instructions { margin-top: 15px; font-size: 14px; color: #8888aa; text-align: center; }
+        .key { background: #16213e; border: 1px solid #0f3460; padding: 2px 8px; border-radius: 4px; color: #fff; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <h1>COLOR SWITCH</h1>
+    <div id="game-container">
+        <div id="ui">Score: <span id="scoreVal">0</span></div>
+        <canvas id="gameCanvas" width="450" height="600"></canvas>
+    </div>
+    <div class="instructions">Controls: Click Screen or press <span class="key">Spacebar</span> to rotate shield color</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("scoreVal");
+
+    let score = 0, gameOver = false;
+    const colors = ['#ff4e50', '#2ecc71', '#00fff5', '#f9d423'];
+    let shieldIndex = 0; // 0, 1, 2, 3 corresponding to 4 quadrants
+    let ball = { x: canvas.width / 2, y: 50, radius: 14, color: colors[0], speed: 2.5 };
+
+    function spawnBall() {
+        ball.y = 50;
+        ball.color = colors[Math.floor(Math.random() * colors.length)];
+        ball.speed = 2.5 + Math.floor(score / 5) * 0.5;
+    }
+
+    function handleAction() {
+        if (gameOver) {
+            score = 0; gameOver = false; spawnBall(); scoreEl.innerText = score;
+            return;
+        }
+        shieldIndex = (shieldIndex + 1) % 4;
+    }
+
+    window.addEventListener("keydown", (e) => {
+        if (e.code === "Space") { e.preventDefault(); handleAction(); }
+    });
+    canvas.addEventListener("click", () => { handleAction(); });
+
+    function update() {
+        if (!gameOver) {
+            ball.y += ball.speed;
+
+            // Check collision with center shield ring (Center is 225, 450, radius ~60)
+            let centerX = canvas.width / 2;
+            let centerY = 450;
+            let dist = Math.hypot(ball.x - centerX, ball.y - centerY);
+
+            if (dist <= 60 + ball.radius) {
+                // Determine angle of ball relative to center
+                let angle = Math.atan2(ball.y - centerY, ball.x - centerX);
+                if (angle < 0) angle += Math.PI * 2;
+                let quadrant = Math.floor(angle / (Math.PI / 2)) % 4;
+
+                // Map quadrant to shield color match
+                let matchedColor = colors[(shieldIndex + quadrant) % 4];
+
+                if (matchedColor === ball.color) {
+                    score++;
+                    scoreEl.innerText = score;
+                    spawnBall();
+                } else {
+                    gameOver = true;
+                }
+            }
+        }
+    }
+
+    function draw() {
+        ctx.fillStyle = "#12121f";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        let centerX = canvas.width / 2;
+        let centerY = 450;
+        let ringRadius = 55;
+
+        // Draw 4 Quadrants of the Wheel Shield
+        for (let i = 0; i < 4; i++) {
+            let startAngle = (i * Math.PI / 2);
+            let endAngle = startAngle + (Math.PI / 2);
+            let colIndex = (shieldIndex + i) % 4;
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, ringRadius, startAngle, endAngle);
+            ctx.lineTo(centerX, centerY);
+            ctx.fillStyle = colors[colIndex];
+            ctx.shadowColor = colors[colIndex];
+            ctx.shadowBlur = 10;
+            ctx.fill();
+            ctx.closePath();
+        }
+        ctx.shadowBlur = 0;
+
+        // Draw Center Hole
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+        ctx.fillStyle = "#1a1a2e";
+        ctx.fill();
+        ctx.closePath();
+
+        // Draw Falling Ball
+        if (!gameOver) {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.shadowColor = ball.color;
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.closePath();
+            ctx.shadowBlur = 0;
+        }
+
+        if (gameOver) {
+            ctx.fillStyle = "rgba(10, 10, 20, 0.85)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 32px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("WRONG COLOR", canvas.width / 2, canvas.height / 2 - 20);
+            ctx.fillStyle = "#00fff5";
+            ctx.font = "16px sans-serif";
+            ctx.fillText("Click or Spacebar to Restart", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.textAlign = "left";
+        }
+    }
+
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+    spawnBall();
+    loop();
+</script>
+</body>
+</html>

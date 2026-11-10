@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Tower - Instant Arcade</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+        body {
+            margin: 0; padding: 0; background: #0f0f1a; color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; overflow: hidden;
+        }
+        h1 { margin: 0 0 5px 0; font-size: 22px; color: #f9d423; letter-spacing: 2px; text-shadow: 0 0 10px rgba(249, 212, 35, 0.4); }
+        #game-container {
+            position: relative; width: 450px; height: 600px; background: #1a1a2e;
+            border: 2px solid #f9d423; border-radius: 8px; box-shadow: 0 0 25px rgba(249, 212, 35, 0.2);
+            overflow: hidden; display: flex; justify-content: center; align-items: center;
+        }
+        canvas { display: block; background: #12121f; }
+        #ui {
+            position: absolute; top: 15px; left: 20px; font-size: 20px; font-weight: bold; color: #f9d423; z-index: 10;
+        }
+        .instructions { margin-top: 15px; font-size: 14px; color: #8888aa; text-align: center; }
+        .key { background: #16213e; border: 1px solid #0f3460; padding: 2px 8px; border-radius: 4px; color: #fff; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <h1>STACK TOWER</h1>
+    <div id="game-container">
+        <div id="ui">Score: <span id="scoreVal">0</span></div>
+        <canvas id="gameCanvas" width="450" height="600"></canvas>
+    </div>
+    <div class="instructions">Controls: Click Screen or press <span class="key">Spacebar</span> to drop block</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("scoreVal");
+
+    let score = 0, gameOver = false;
+    const blockHeight = 30;
+    const baseWidth = 160;
+    let scrollY = 0;
+    let targetScrollY = 0;
+
+    let stack = [
+        { x: (canvas.width - baseWidth) / 2, y: canvas.height - 50, width: baseWidth, color: '#ff4e50' }
+    ];
+
+    let current = {
+        x: 0, y: canvas.height - 50 - blockHeight, width: baseWidth, color: '#f9d423', speed: 3, dir: 1
+    };
+
+    const colors = ['#ff4e50', '#f9d423', '#2ecc71', '#00fff5', '#9b59b6', '#e67e22'];
+
+    function dropBlock() {
+        if (gameOver) { resetGame(); return; }
+
+        let topBlock = stack[stack.length - 1];
+        let diff = current.x - topBlock.x;
+
+        if (Math.abs(diff) >= topBlock.width) {
+            gameOver = true;
+            return;
+        }
+
+        // Clip the block
+        let newWidth = topBlock.width - Math.abs(diff);
+        let newX = diff > 0 ? topBlock.x + diff : topBlock.x;
+
+        stack.push({
+            x: newX,
+            y: current.y,
+            width: newWidth,
+            color: current.color
+        });
+
+        score++;
+        scoreEl.innerText = score;
+        targetScrollY += blockHeight;
+
+        let nextColor = colors[score % colors.length];
+        current = {
+            x: -newWidth,
+            y: current.y - blockHeight,
+            width: newWidth,
+            color: nextColor,
+            speed: 3 + Math.floor(score / 5),
+            dir: 1
+        };
+
+        if (current.y < 150) {
+            // Keep stack inside screen viewport visually
+            stack.forEach(b => b.y += blockHeight);
+            current.y += blockHeight;
+            targetScrollY -= blockHeight;
+        }
+    }
+
+    window.addEventListener("keydown", (e) => {
+        if (e.code === "Space") { e.preventDefault(); dropBlock(); }
+    });
+    canvas.addEventListener("click", () => { dropBlock(); });
+
+    function resetGame() {
+        score = 0; gameOver = false; scrollY = 0; targetScrollY = 0;
+        stack = [{ x: (canvas.width - baseWidth) / 2, y: canvas.height - 50, width: baseWidth, color: '#ff4e50' }];
+        current = { x: 0, y: canvas.height - 50 - blockHeight, width: baseWidth, color: '#f9d423', speed: 3, dir: 1 };
+        scoreEl.innerText = score;
+    }
+
+    function update() {
+        if (!gameOver) {
+            current.x += current.speed * current.dir;
+            if (current.x <= 0 || current.x + current.width >= canvas.width) {
+                current.dir *= -1;
+            }
+        }
+        // Smooth scroll transition
+        scrollY += (targetScrollY - scrollY) * 0.1;
+    }
+
+    function draw() {
+        ctx.fillStyle = "#12121f";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.translate(0, scrollY);
+
+        // Draw Stacked Blocks
+        stack.forEach(b => {
+            ctx.fillStyle = b.color;
+            ctx.shadowColor = b.color;
+            ctx.shadowBlur = 8;
+            ctx.fillRect(b.x, b.y, b.width, blockHeight);
+        });
+
+        // Draw Moving Block
+        if (!gameOver) {
+            ctx.fillStyle = current.color;
+            ctx.shadowColor = current.color;
+            ctx.shadowBlur = 12;
+            ctx.fillRect(current.x, current.y, current.width, blockHeight);
+        }
+        ctx.restore();
+        ctx.shadowBlur = 0;
+
+        if (gameOver) {
+            ctx.fillStyle = "rgba(10, 10, 20, 0.85)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 32px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("TOWER COLLAPSED", canvas.width / 2, canvas.height / 2 - 20);
+            ctx.fillStyle = "#f9d423";
+            ctx.font = "16px sans-serif";
+            ctx.fillText("Click or Spacebar to Restart", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.textAlign = "left";
+        }
+    }
+
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+    loop();
+</script>
+</body>
+</html>
