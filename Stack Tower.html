@@ -47,11 +47,11 @@
     let targetScrollY = 0;
 
     let stack = [
-        { x: (canvas.width - baseWidth) / 2, y: canvas.height - 50, width: baseWidth, color: '#ff4e50' }
+        { x: (canvas.width - baseWidth) / 2, y: canvas.height - 70, width: baseWidth, color: '#ff4e50' }
     ];
 
     let current = {
-        x: 0, y: canvas.height - 50 - blockHeight, width: baseWidth, color: '#f9d423', speed: 3, dir: 1
+        x: 0, y: canvas.height - 70 - blockHeight, width: baseWidth, color: '#f9d423', speed: 3, dir: 1
     };
 
     const colors = ['#ff4e50', '#f9d423', '#2ecc71', '#00fff5', '#9b59b6', '#e67e22'];
@@ -62,12 +62,13 @@
         let topBlock = stack[stack.length - 1];
         let diff = current.x - topBlock.x;
 
+        // If completely missed
         if (Math.abs(diff) >= topBlock.width) {
             gameOver = true;
             return;
         }
 
-        // Clip the block
+        // Clip the block size
         let newWidth = topBlock.width - Math.abs(diff);
         let newX = diff > 0 ? topBlock.x + diff : topBlock.x;
 
@@ -82,21 +83,24 @@
         scoreEl.innerText = score;
         targetScrollY += blockHeight;
 
+        // Setup next moving block above
         let nextColor = colors[score % colors.length];
+        let nextY = current.y - blockHeight;
+        
         current = {
-            x: -newWidth,
-            y: current.y - blockHeight,
+            x: diff > 0 ? 0 : canvas.width - newWidth,
+            y: nextY,
             width: newWidth,
             color: nextColor,
-            speed: 3 + Math.floor(score / 5),
+            speed: 3 + Math.floor(score / 4),
             dir: 1
         };
 
-        if (current.y < 150) {
-            // Keep stack inside screen viewport visually
+        // Shift view upward if stack gets too high
+        if (nextY < 200) {
+            targetScrollY -= blockHeight;
             stack.forEach(b => b.y += blockHeight);
             current.y += blockHeight;
-            targetScrollY -= blockHeight;
         }
     }
 
@@ -107,8 +111,8 @@
 
     function resetGame() {
         score = 0; gameOver = false; scrollY = 0; targetScrollY = 0;
-        stack = [{ x: (canvas.width - baseWidth) / 2, y: canvas.height - 50, width: baseWidth, color: '#ff4e50' }];
-        current = { x: 0, y: canvas.height - 50 - blockHeight, width: baseWidth, color: '#f9d423', speed: 3, dir: 1 };
+        stack = [{ x: (canvas.width - baseWidth) / 2, y: canvas.height - 70, width: baseWidth, color: '#ff4e50' }];
+        current = { x: 0, y: canvas.height - 70 - blockHeight, width: baseWidth, color: '#f9d423', speed: 3, dir: 1 };
         scoreEl.innerText = score;
     }
 
@@ -119,8 +123,8 @@
                 current.dir *= -1;
             }
         }
-        // Smooth scroll transition
-        scrollY += (targetScrollY - scrollY) * 0.1;
+        // Smooth camera scroll interpolation
+        scrollY += (targetScrollY - scrollY) * 0.15;
     }
 
     function draw() {
@@ -130,7 +134,7 @@
         ctx.save();
         ctx.translate(0, scrollY);
 
-        // Draw Stacked Blocks
+        // Draw Placed Blocks
         stack.forEach(b => {
             ctx.fillStyle = b.color;
             ctx.shadowColor = b.color;
@@ -138,7 +142,7 @@
             ctx.fillRect(b.x, b.y, b.width, blockHeight);
         });
 
-        // Draw Moving Block
+        // Draw Active Moving Block
         if (!gameOver) {
             ctx.fillStyle = current.color;
             ctx.shadowColor = current.color;
@@ -152,7 +156,7 @@
             ctx.fillStyle = "rgba(10, 10, 20, 0.85)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 32px sans-serif";
+            ctx.font = "bold 30px sans-serif";
             ctx.textAlign = "center";
             ctx.fillText("TOWER COLLAPSED", canvas.width / 2, canvas.height / 2 - 20);
             ctx.fillStyle = "#f9d423";

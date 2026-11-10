@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Whack-a-Bot - Instant Arcade</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+        body {
+            margin: 0; padding: 0; background: #0f0f1a; color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; overflow: hidden;
+        }
+        h1 { margin: 0 0 5px 0; font-size: 22px; color: #2ecc71; letter-spacing: 2px; text-shadow: 0 0 10px rgba(46, 204, 113, 0.4); }
+        #game-container {
+            position: relative; width: 450px; height: 500px; background: #1a1a2e;
+            border: 2px solid #2ecc71; border-radius: 8px; box-shadow: 0 0 25px rgba(46, 204, 113, 0.2);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #ui { display: flex; gap: 30px; font-size: 18px; font-weight: bold; color: #2ecc71; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 100px); gap: 15px; }
+        .hole {
+            width: 100px; height: 100px; background: #12121f; border: 2px solid #16213e; border-radius: 50%;
+            position: relative; overflow: hidden; cursor: pointer;
+        }
+        .bot {
+            position: absolute; width: 100%; height: 100%; background: #e74c3c; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 32px;
+            top: 100%; transition: top 0.15s ease-in-out; box-shadow: 0 0 15px #e74c3c;
+        }
+        .hole.up .bot { top: 0; }
+        .instructions { margin-top: 15px; font-size: 14px; color: #8888aa; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <h1>CYBER WHACK-A-BOT</h1>
+    <div id="game-container">
+        <div id="ui">
+            <div>Score: <span id="scoreVal">0</span></div>
+            <div>Time: <span id="timeVal">30</span>s</div>
+        </div>
+        <div class="grid">
+            <div class="hole" onclick="whack(0)"><div class="bot" id="b0">🤖</div></div>
+            <div class="hole" onclick="whack(1)"><div class="bot" id="b1">🤖</div></div>
+            <div class="hole" onclick="whack(2)"><div class="bot" id="b2">🤖</div></div>
+            <div class="hole" onclick="whack(3)"><div class="bot" id="b3">🤖</div></div>
+            <div class="hole" onclick="whack(4)"><div class="bot" id="b4">🤖</div></div>
+            <div class="hole" onclick="whack(5)"><div class="bot" id="b5">🤖</div></div>
+        </div>
+    </div>
+    <div class="instructions">Click/Tap the rogue robots as fast as you can before time runs out!</div>
+
+<script>
+    let score = 0, timeLeft = 30, gameInterval, timerInterval, playing = false;
+    const scoreEl = document.getElementById("scoreVal");
+    const timeVal = document.getElementById("timeVal");
+
+    function startGame() {
+        score = 0; timeLeft = 30; playing = true;
+        scoreEl.innerText = score; timeVal.innerText = timeLeft;
+        
+        clearInterval(gameInterval);
+        clearInterval(timerInterval);
+
+        gameInterval = setInterval(popupBot, 650);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timeVal.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(gameInterval);
+                clearInterval(timerInterval);
+                playing = false;
+                alert("Game Over! Final Score: " + score);
+                startGame();
+            }
+        }, 1000);
+    }
+
+    function popupBot() {
+        let holes = document.querySelectorAll('.hole');
+        let index = Math.floor(Math.random() * holes.length);
+        let hole = holes[index];
+        
+        if (hole.classList.contains('up')) return;
+
+        hole.classList.add('up');
+        setTimeout(() => {
+            hole.classList.remove('up');
+        }, 550);
+    }
+
+    function whack(index) {
+        if (!playing) return;
+        let hole = document.querySelectorAll('.hole')[index];
+        if (hole.classList.contains('up')) {
+            hole.classList.remove('up');
+            score += 10;
+            scoreEl.innerText = score;
+        }
+    }
+
+    startGame();
+</script>
+</body>
+</html>

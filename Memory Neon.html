@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Neon - Instant Arcade</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+        body {
+            margin: 0; padding: 0; background: #0f0f1a; color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; overflow: hidden;
+        }
+        h1 { margin: 0 0 5px 0; font-size: 22px; color: #9b59b6; letter-spacing: 2px; text-shadow: 0 0 10px rgba(155, 89, 182, 0.4); }
+        #game-container {
+            position: relative; width: 400px; height: 450px; background: #1a1a2e;
+            border: 2px solid #9b59b6; border-radius: 8px; box-shadow: 0 0 25px rgba(155, 89, 182, 0.2);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #ui { font-size: 18px; font-weight: bold; color: #9b59b6; margin-bottom: 20px; }
+        .pad-grid { display: grid; grid-template-columns: repeat(2, 120px); gap: 15px; }
+        .pad {
+            width: 120px; height: 120px; border-radius: 12px; cursor: pointer; opacity: 0.5; transition: opacity 0.1s, transform 0.1s;
+        }
+        .pad:active { transform: scale(0.95); }
+        .pad.active { opacity: 1; box-shadow: 0 0 20px currentColor; }
+        #p0 { background: #ff4e50; color: #ff4e50; }
+        #p1 { background: #2ecc71; color: #2ecc71; }
+        #p2 { background: #f9d423; color: #f9d423; }
+        #p3 { background: #00fff5; color: #00fff5; }
+        .instructions { margin-top: 15px; font-size: 14px; color: #8888aa; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <h1>MEMORY NEON</h1>
+    <div id="game-container">
+        <div id="ui">Level: <span id="levelVal">1</span> - <span id="statusVal">Watch sequence</span></div>
+        <div class="pad-grid">
+            <div class="pad" id="p0" onclick="playerClick(0)"></div>
+            <div class="pad" id="p1" onclick="playerClick(1)"></div>
+            <div class="pad" id="p2" onclick="playerClick(2)"></div>
+            <div class="pad" id="p3" onclick="playerClick(3)"></div>
+        </div>
+    </div>
+    <div class="instructions">Watch the pads light up and repeat the sequence back!</div>
+
+<script>
+    let sequence = [], playerSequence = [], level = 1, isPlayingSequence = false;
+    const levelEl = document.getElementById("levelVal");
+    const statusEl = document.getElementById("statusVal");
+
+    function flashPad(index) {
+        let pad = document.getElementById('p' + index);
+        pad.classList.add('active');
+        setTimeout(() => pad.classList.remove('active'), 350);
+    }
+
+    function nextLevel() {
+        playerSequence = [];
+        levelEl.innerText = level;
+        statusEl.innerText = "Watch sequence";
+        sequence.push(Math.floor(Math.random() * 4));
+        
+        isPlayingSequence = true;
+        let i = 0;
+        let interval = setInterval(() => {
+            flashPad(sequence[i]);
+            i++;
+            if (i >= sequence.length) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    isPlayingSequence = false;
+                    statusEl.innerText = "Your turn";
+                }, 400);
+            }
+        }, 700);
+    }
+
+    function playerClick(index) {
+        if (isPlayingSequence) return;
+        flashPad(index);
+        playerSequence.push(index);
+
+        let currentIndex = playerSequence.length - 1;
+        if (playerSequence[currentIndex] !== sequence[currentIndex]) {
+            statusEl.innerText = "Game Over! Restarting...";
+            setTimeout(() => {
+                sequence = [];
+                level = 1;
+                nextLevel();
+            }, 1200);
+            return;
+        }
+
+        if (playerSequence.length === sequence.length) {
+            statusEl.innerText = "Correct! Next level...";
+            level++;
+            setTimeout(nextLevel, 1000);
+        }
+    }
+
+    nextLevel();
+</script>
+</body>
+</html>

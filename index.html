@@ -18,30 +18,30 @@
             background: radial-gradient(circle at center, #1e133c 0%, #0b091a 100%);
             z-index: 100; padding: 20px; overflow-y: auto;
         }
-        .hub-header { text-align: center; margin-bottom: 30px; }
+        .hub-header { text-align: center; margin-bottom: 25px; }
         .hub-header h1 {
-            font-size: 2.8rem; margin: 0 0 10px 0;
+            font-size: 2.5rem; margin: 0 0 5px 0;
             background: linear-gradient(45deg, #ff4e50, #f9d423, #00fff5);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             text-transform: uppercase; letter-spacing: 2px;
         }
-        .hub-header p { color: #aaa; font-size: 1.1rem; margin: 0; }
+        .hub-header p { color: #aaa; font-size: 1rem; margin: 0; }
         .games-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px; width: 100%; max-width: 1100px; padding: 10px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px; width: 100%; max-width: 1200px; padding: 10px;
         }
         .game-card {
             background: rgba(25, 18, 48, 0.7); border: 2px solid rgba(0, 255, 245, 0.2);
-            border-radius: 16px; padding: 20px; text-align: center; backdrop-filter: blur(10px);
+            border-radius: 14px; padding: 18px; text-align: center; backdrop-filter: blur(10px);
             box-shadow: 0 8px 30px rgba(0,0,0,0.5); transition: transform 0.3s ease, border-color 0.3s ease;
             display: flex; flex-direction: column; justify-content: space-between;
         }
-        .game-card:hover { transform: translateY(-8px); border-color: #00fff5; box-shadow: 0 12px 40px rgba(0, 255, 245, 0.3); }
-        .game-card h3 { font-size: 1.4rem; color: #00fff5; margin-top: 0; margin-bottom: 8px; }
-        .game-card p { font-size: 0.9rem; color: #ccc; line-height: 1.4; margin-bottom: 20px; }
+        .game-card:hover { transform: translateY(-5px); border-color: #00fff5; box-shadow: 0 10px 30px rgba(0, 255, 245, 0.3); }
+        .game-card h3 { font-size: 1.25rem; color: #00fff5; margin-top: 0; margin-bottom: 6px; }
+        .game-card p { font-size: 0.85rem; color: #ccc; line-height: 1.3; margin-bottom: 15px; }
         .play-btn {
             background: linear-gradient(135deg, #00fff5, #0077ff); border: none; color: #0b091a;
-            padding: 10px 25px; font-size: 0.95rem; font-weight: bold; border-radius: 25px;
+            padding: 9px 20px; font-size: 0.9rem; font-weight: bold; border-radius: 25px;
             cursor: pointer; box-shadow: 0 4px 15px rgba(0, 255, 245, 0.4); text-transform: uppercase;
             transition: transform 0.2s, background 0.2s;
         }
@@ -66,15 +66,15 @@
 
     <div id="landing-page">
         <div class="hub-header">
-            <h1>🎮 Arcade Game Hub</h1>
-            <p>Choose your game and jump straight into the action!</p>
+            <h1>🎮 Ultimate Arcade Hub</h1>
+            <p>Select any game below to play instantly!</p>
         </div>
 
         <div class="games-grid">
             <div class="game-card">
                 <div>
                     <h3>🤖 Cyber Arena Shooter</h3>
-                    <p>Eliminate enemy bots hidden behind obstacles using your laser blaster[cite: 1].</p>
+                    <p>Eliminate enemy bots in a 3D tactical arena using your laser blaster[cite: 1].</p>
                 </div>
                 <button class="play-btn" onclick="launchGame('3D shooter game_3.html')">Play Now</button>
             </div>
@@ -82,7 +82,7 @@
             <div class="game-card">
                 <div>
                     <h3>🪔 Diwali Master Blaster</h3>
-                    <p>Light diyas, burst sparklers, and dodge festive sweet traps across 3 stages[cite: 2]!</p>
+                    <p>Light diyas, burst sparklers, and avoid sweet traps across 3 stages[cite: 2]!</p>
                 </div>
                 <button class="play-btn" onclick="launchGame('diwali-game_3.html')">Play Now</button>
             </div>
@@ -90,7 +90,7 @@
             <div class="game-card">
                 <div>
                     <h3>⚡ Neon Hopper</h3>
-                    <p>Test your reflexes! Move and jump over neon obstacles as speed increases[cite: 4].</p>
+                    <p>Jump over fast-moving neon hurdles as the game speeds up[cite: 4].</p>
                 </div>
                 <button class="play-btn" onclick="launchGame('Hopper Game_2.html')">Play Now</button>
             </div>
@@ -98,7 +98,7 @@
             <div class="game-card">
                 <div>
                     <h3>🏗️ Stack Tower</h3>
-                    <p>Drop moving blocks carefully to build the highest skyscraper possible without it collapsing.</p>
+                    <p>Drop swinging blocks accurately to build the highest skyscraper.</p>
                 </div>
                 <button class="play-btn" onclick="launchGame('Stack Tower.html')">Play Now</button>
             </div>
@@ -106,9 +106,33 @@
             <div class="game-card">
                 <div>
                     <h3>🎨 Color Switch</h3>
-                    <p>Rotate the wheel shield matching incoming colored balls with split-second precision.</p>
+                    <p>Rotate the wheel shield to match incoming colored bouncing balls.</p>
                 </div>
                 <button class="play-btn" onclick="launchGame('Color Switch.html')">Play Now</button>
+            </div>
+
+            <div class="game-card">
+                <div>
+                    <h3>🏃‍♂️ Neon Runner</h3>
+                    <p>Endless side-scrolling runner testing your jump timing reflexes.</p>
+                </div>
+                <button class="play-btn" onclick="launchGame('Neon Runner.html')">Play Now</button>
+            </div>
+
+            <div class="game-card">
+                <div>
+                    <h3>🧠 Memory Neon</h3>
+                    <p>Simon Says pattern-matching game testing your short-term memory.</p>
+                </div>
+                <button class="play-btn" onclick="launchGame('Memory Neon.html')">Play Now</button>
+            </div>
+
+            <div class="game-card">
+                <div>
+                    <h3>🤖 Cyber Whack-a-Bot</h3>
+                    <p>Fast-paced clicking challenge to whack rogue bots before they hide.</p>
+                </div>
+                <button class="play-btn" onclick="launchGame('Whack-a-Bot.html')">Play Now</button>
             </div>
         </div>
     </div>

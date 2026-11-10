@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Runner - Instant Arcade</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+        body {
+            margin: 0; padding: 0; background: #0f0f1a; color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; overflow: hidden;
+        }
+        h1 { margin: 0 0 5px 0; font-size: 22px; color: #ff4e50; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255, 78, 80, 0.4); }
+        #game-container {
+            position: relative; width: 600px; height: 350px; background: #1a1a2e;
+            border: 2px solid #ff4e50; border-radius: 8px; box-shadow: 0 0 25px rgba(255, 78, 80, 0.2);
+            overflow: hidden; display: flex; justify-content: center; align-items: center;
+        }
+        canvas { display: block; background: #12121f; }
+        #ui { position: absolute; top: 15px; left: 20px; font-size: 20px; font-weight: bold; color: #ff4e50; z-index: 10; }
+        .instructions { margin-top: 15px; font-size: 14px; color: #8888aa; text-align: center; }
+        .key { background: #16213e; border: 1px solid #0f3460; padding: 2px 8px; border-radius: 4px; color: #fff; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <h1>NEON RUNNER</h1>
+    <div id="game-container">
+        <div id="ui">Score: <span id="scoreVal">0</span></div>
+        <canvas id="gameCanvas" width="600" height="350"></canvas>
+    </div>
+    <div class="instructions">Controls: Press <span class="key">Spacebar</span> or <span class="key">Up Arrow</span> to Jump</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("scoreVal");
+
+    let score = 0, gameOver = false, gameSpeed = 5;
+    let player = { x: 60, y: 260, width: 30, height: 40, vy: 0, gravity: 0.6, jumpPower: -11, grounded: true };
+    let obstacles = [], spawnTimer = 0, spawnInterval = 90;
+
+    function jump() {
+        if (gameOver) {
+            score = 0; gameSpeed = 5; obstacles = []; spawnTimer = 0; spawnInterval = 90;
+            player.y = 260; player.vy = 0; gameOver = false; scoreEl.innerText = score;
+            return;
+        }
+        if (player.grounded) {
+            player.vy = player.jumpPower;
+            player.grounded = false;
+        }
+    }
+
+    window.addEventListener("keydown", (e) => {
+        if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); jump(); }
+    });
+    canvas.addEventListener("click", () => { jump(); });
+
+    function update() {
+        if (!gameOver) {
+            player.vy += player.gravity;
+            player.y += player.vy;
+
+            if (player.y >= 260) {
+                player.y = 260;
+                player.vy = 0;
+                player.grounded = true;
+            }
+
+            spawnTimer++;
+            if (spawnTimer >= spawnInterval) {
+                obstacles.push({ x: canvas.width, y: 270, width: 25, height: 30, color: '#00fff5' });
+                spawnTimer = 0;
+                if (spawnInterval > 50) spawnInterval -= 2;
+                gameSpeed += 0.05;
+            }
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].x -= gameSpeed;
+
+                // Collision Detection (AABB)
+                if (
+                    player.x < obstacles[i].x + obstacles[i].width &&
+                    player.x + player.width > obstacles[i].x &&
+                    player.y < obstacles[i].y + obstacles[i].height &&
+                    player.y + player.height > obstacles[i].y
+                ) {
+                    gameOver = true;
+                }
+
+                if (obstacles[i].x + obstacles[i].width < 0) {
+                    obstacles.splice(i, 1);
+                    score += 10;
+                    scoreEl.innerText = score;
+                }
+            }
+        }
+    }
+
+    function draw() {
+        ctx.fillStyle = "#12121f";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Ground Line
+        ctx.strokeStyle = "#ff4e50";
+        ctx.lineWidth = 3;
+        ctx.shadowColor = "#ff4e50";
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(0, 300);
+        ctx.lineTo(canvas.width, 300);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Player
+        ctx.fillStyle = "#ff4e50";
+        ctx.shadowColor = "#ff4e50";
+        ctx.shadowBlur = 10;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+
+        // Obstacles
+        obstacles.forEach(obs => {
+            ctx.fillStyle = obs.color;
+            ctx.shadowColor = obs.color;
+            ctx.shadowBlur = 10;
+            ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+        });
+        ctx.shadowBlur = 0;
+
+        if (gameOver) {
+            ctx.fillStyle = "rgba(10, 10, 20, 0.85)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 32px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 20);
+            ctx.fillStyle = "#ff4e50";
+            ctx.font = "16px sans-serif";
+            ctx.fillText("Click or Spacebar to Restart", canvas.width / 2, canvas.height / 2 + 20);
+            ctx.textAlign = "left";
+        }
+    }
+
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+    loop();
+</script>
+</body>
+</html>
